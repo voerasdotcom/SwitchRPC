@@ -376,9 +376,12 @@ void discordCreateHeadlessSession(u64 titleId, std::string titleName, u64 startE
         writeToLog("[Discord] Falling back to tinfoil for icon: %s", iconUrl.c_str());
     }
 
+    // Mirror the same session-start value Discord uses for its timer so the
+    // message text matches the countdown/elapsed value the user sees.
     std::string stateText = "Playing on Nintendo Switch";
     if (startEpochSec != 0) {
-        const u64 elapsedSec = getCorrectedNowSec() - startEpochSec;
+        const u64 nowSec = getCorrectedNowSec();
+        const u64 elapsedSec = (nowSec > startEpochSec) ? (nowSec - startEpochSec) : 0ULL;
         stateText = "Playing on Nintendo Switch, played for: " + formatSessionDuration(elapsedSec);
     }
 
