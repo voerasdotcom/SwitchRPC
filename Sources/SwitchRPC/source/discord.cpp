@@ -354,6 +354,16 @@ void discordCleanupStaleSessions() {
     }
 }
 
+static std::string formatSessionDuration(u64 elapsedSec) {
+    const u64 hours = elapsedSec / 3600ULL;
+    const u64 minutes = (elapsedSec % 3600ULL) / 60ULL;
+    const u64 seconds = elapsedSec % 60ULL;
+
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%02llu:%02llu:%02llu", (unsigned long long)hours, (unsigned long long)minutes, (unsigned long long)seconds);
+    return std::string(buffer);
+}
+
 void discordCreateHeadlessSession(u64 titleId, std::string titleName, u64 startEpochSec, const bool includeToken) {
     writeToLog("[Discord] Creating/Updating session for TID: %016llX (%s)", (unsigned long long)titleId, titleName.c_str());
     
@@ -366,6 +376,12 @@ void discordCreateHeadlessSession(u64 titleId, std::string titleName, u64 startE
         writeToLog("[Discord] Falling back to tinfoil for icon: %s", iconUrl.c_str());
     }
 
+    std::string stateText = "Playing on Nintendo Switch";
+    if (startEpochSec != 0) {
+        const u64 elapsedSec = getCorrectedNowSec() - startEpochSec;
+        stateText = "Playing on Nintendo Switch, played for: " + formatSessionDuration(elapsedSec);
+    }
+
     // make json body
     json_object* json_body = json_object_new_object();
     json_object* json_activities = json_object_new_array();
@@ -375,7 +391,7 @@ void discordCreateHeadlessSession(u64 titleId, std::string titleName, u64 startE
     json_object_object_add(json_activity, "application_id", json_object_new_string(clientId));
     json_object_object_add(json_activity, "platform", json_object_new_string("desktop"));
     json_object_object_add(json_activity, "name", json_object_new_string(titleName.c_str()));
-    json_object_object_add(json_activity, "state", json_object_new_string("Nintendo Switch"));
+    json_object_object_add(json_activity, "state", json_object_new_string(stateText.c_str()));
 
     // elapsed timer: discord shows (now - start). we pass a start moved forward
     // to exclude sleep, so it counts real playtime. timestamps are in ms.

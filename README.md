@@ -1,4 +1,5 @@
 # SwitchRPC
+# NOTICE: This fork's additions was made with A.I.
 Discord Rich Presence for the Nintendo Switch
 
 Does not rely on anything other than your Switch and a mobile device for logging in. Runs in the background and keeps your rich presence up to date with whatever title is open.
